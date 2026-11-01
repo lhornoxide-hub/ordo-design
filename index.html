@@ -20,7 +20,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+Thai:wght@300;400;600;700&display=swap');
         body {
-            font-family: 'Noto Sans Thai', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Noto Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Leelawadee UI', 'Tahoma', sans-serif;
             background-color: #f3f6fb; 
         }
         .card {
@@ -120,7 +120,19 @@
                             <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                             <span data-lang-key="presetTitle">ชุดมาตรฐานฟาร์มยอดนิยม (Quick Farm Presets):</span>
                         </span>
-                        <span class="text-[10px] text-indigo-600 bg-white px-2 py-0.5 rounded-full border border-indigo-100 font-medium">1-Click Auto Design</span>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="text-[10px] text-indigo-600 bg-white px-2 py-0.5 rounded-full border border-indigo-100 font-medium">1-Click Auto Design</span>
+                            <button type="button" onclick="exportDesignJSON()" title="บันทึกพารามิเตอร์การออกแบบเป็นไฟล์ JSON" class="text-[10px] bg-white hover:bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-300 font-medium transition flex items-center gap-1">
+                                <span>💾</span> <span data-lang-key="btnSaveDesign">บันทึก</span>
+                            </button>
+                            <button type="button" onclick="getEl('importFileInput').click()" title="นำเข้าพารามิเตอร์จากไฟล์ JSON" class="text-[10px] bg-white hover:bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-300 font-medium transition flex items-center gap-1">
+                                <span>📂</span> <span data-lang-key="btnLoadDesign">เปิดไฟล์</span>
+                            </button>
+                            <button type="button" onclick="resetToDefaults()" title="คืนค่าพารามิเตอร์มาตรฐาน" class="text-[10px] bg-white hover:bg-red-50 text-red-600 px-2 py-0.5 rounded border border-red-200 font-medium transition">
+                                <span data-lang-key="btnResetDesign">รีเซ็ต</span>
+                            </button>
+                            <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importDesignJSON(event)">
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                         <button type="button" onclick="applyPreset('swine8')" class="p-2 bg-white hover:bg-indigo-50/80 hover:border-indigo-400 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 text-left transition shadow-xs">
@@ -139,6 +151,10 @@
                             🏭 สุกรขุน 12 ตัว
                             <span class="block text-[10px] text-slate-500 font-normal">540k m³/h | 3 ด้าน U-Shape</span>
                         </button>
+                        <button type="button" onclick="applyPreset('wusenOpt22')" class="p-2 bg-gradient-to-r from-emerald-50 to-indigo-50 hover:from-emerald-100 hover:to-indigo-100 border border-emerald-400 rounded-lg text-xs font-bold text-slate-800 text-left transition shadow-xs">
+                            🏥 กักโรค (WUSEN Opt 2.2)
+                            <span class="block text-[10px] text-emerald-700 font-semibold">23x2.5m | 3 ด้าน U-Shape</span>
+                        </button>
                     </div>
                 </div>
 
@@ -146,21 +162,21 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <label for="nFans" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="fanCountLabel">จำนวนพัดลม</label>
-                                <input id="nFans" type="number" class="w-full p-2 border border-slate-300 rounded-lg" min="1" oninput="calculateDesign()"> 
+                                <input id="nFans" type="number" class="w-full p-2 border border-slate-300 rounded-lg" min="1" value="9" oninput="calculateDesign()"> 
                             </div>
                             <div class="md:col-span-2 grid grid-cols-2 gap-4">
                                 <div>
                                     <label for="qFanMetric" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="airflowMetricLabel">ปริมาณอากาศ (m³/h)</label>
-                                    <input id="qFanMetric" type="text" inputmode="numeric" class="w-full p-2 border border-slate-300 rounded-lg" oninput="updateAirflow('metric', this)"> 
+                                    <input id="qFanMetric" type="text" inputmode="numeric" class="w-full p-2 border border-slate-300 rounded-lg" value="40000" oninput="updateAirflow('metric', this)"> 
                                 </div>
                                 <div>
                                     <label for="qFanImperial" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="airflowImperialLabel">(CFM)</label> 
-                                    <input id="qFanImperial" type="text" inputmode="numeric" class="w-full p-2 border border-slate-300 rounded-lg" oninput="updateAirflow('imperial', this)"> 
+                                    <input id="qFanImperial" type="text" inputmode="numeric" class="w-full p-2 border border-slate-300 rounded-lg" value="23543" oninput="updateAirflow('imperial', this)"> 
                                 </div>
                             </div>
                             <div>
                                 <label for="dFan" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="fanDiameterLabel">Ø พัดลม</label> 
-                                <input id="dFan" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.01" oninput="calculateDesign()">
+                                <input id="dFan" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.01" value="1.27" oninput="calculateDesign()">
                                 <div id="dFanUnit" class="text-xs text-slate-500 mt-1">m</div> 
                             </div>
                         </div>
@@ -179,22 +195,22 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                             <div>
                                 <label for="vFilter" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="filterVelocityLabel">ความเร็วลมผ่านกรอง (เป้าหมาย)</label> 
-                                <input id="vFilter" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.1" oninput="calculateDesign()">
+                                <input id="vFilter" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.1" value="1.0" oninput="calculateDesign()">
                                 <div id="vFilterUnit" class="text-xs text-slate-500 mt-1">m/s</div> 
                             </div>
                             <div>
                                 <label for="dActual" class="block text-sm font-medium mb-1 text-slate-700 text-blue-600 font-bold" data-lang-key="actualDistanceLabel">ระยะติดตั้งถึงด้านหน้า</label>
-                                <input id="dActual" type="number" class="w-full p-2 border border-blue-400 bg-blue-50 rounded-lg" step="0.1" oninput="calculateDesign()"> 
+                                <input id="dActual" type="number" class="w-full p-2 border border-blue-400 bg-blue-50 rounded-lg" step="0.1" value="20" oninput="calculateDesign()"> 
                                 <div id="dActualUnit" class="text-xs text-slate-500 mt-1">m</div>
                             </div>
                             <div>
                                 <label for="hActual" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="installHeightLabel">ความสูงพื้นที่ติดตั้ง</label> 
-                                <input id="hActual" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.1" oninput="calculateDesign()">
+                                <input id="hActual" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.1" value="3" oninput="calculateDesign()">
                                 <div id="hActualUnit" class="text-xs text-slate-500 mt-1">m</div> 
                             </div>
                             <div id="singleWidthContainer">
                                 <label for="wActual" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="installWidthLabel">ความกว้างแผงกรอง (ด้านเดียว)</label> 
-                                <input id="wActual" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.1" oninput="calculateDesign()"> 
+                                <input id="wActual" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.1" value="15" oninput="calculateDesign()"> 
                                 <div id="wActualUnit" class="text-xs text-slate-500 mt-1">m</div>
                             </div>
                         </div>
@@ -213,17 +229,17 @@
                             <div class="grid grid-cols-3 gap-3 text-xs">
                                 <div>
                                     <label for="wLeft" class="block font-medium mb-1 text-slate-700" data-lang-key="wLeftLabel">ปีกซ้าย (Left Wing)</label>
-                                    <input id="wLeft" type="number" class="w-full p-2 border border-indigo-300 rounded-lg bg-white" step="0.1" oninput="calculateDesign()">
+                                    <input id="wLeft" type="number" class="w-full p-2 border border-indigo-300 rounded-lg bg-white" step="0.1" value="5" oninput="calculateDesign()">
                                     <div id="wLeftUnit" class="text-[10px] text-slate-500 mt-0.5">m</div>
                                 </div>
                                 <div>
                                     <label for="wFront" class="block font-medium mb-1 text-indigo-950 font-bold" data-lang-key="wFrontLabel">ด้านหน้าตรง (Front Face)</label>
-                                    <input id="wFront" type="number" class="w-full p-2 border border-indigo-400 rounded-lg bg-indigo-50/70 font-semibold" step="0.1" oninput="calculateDesign()">
+                                    <input id="wFront" type="number" class="w-full p-2 border border-indigo-400 rounded-lg bg-indigo-50/70 font-semibold" step="0.1" value="15" oninput="calculateDesign()">
                                     <div id="wFrontUnit" class="text-[10px] text-slate-500 mt-0.5">m</div>
                                 </div>
                                 <div>
                                     <label for="wRight" class="block font-medium mb-1 text-slate-700" data-lang-key="wRightLabel">ปีกขวา (Right Wing)</label>
-                                    <input id="wRight" type="number" class="w-full p-2 border border-indigo-300 rounded-lg bg-white" step="0.1" oninput="calculateDesign()">
+                                    <input id="wRight" type="number" class="w-full p-2 border border-indigo-300 rounded-lg bg-white" step="0.1" value="5" oninput="calculateDesign()">
                                     <div id="wRightUnit" class="text-[10px] text-slate-500 mt-0.5">m</div>
                                 </div>
                             </div>
@@ -236,11 +252,11 @@
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <label for="coeffA" class="block text-sm font-medium mb-1 text-slate-700">Coefficient a</label> 
-                                <input id="coeffA" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.001" oninput="calculateDesign()"> 
+                                <input id="coeffA" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.001" value="0.05" oninput="calculateDesign()"> 
                             </div>
                             <div>
                                 <label for="coeffB" class="block text-sm font-medium mb-1 text-slate-700">Coefficient b</label>
-                                <input id="coeffB" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.0001" oninput="calculateDesign()"> 
+                                <input id="coeffB" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.0001" value="0.002" oninput="calculateDesign()"> 
                             </div>
                         </div> 
                     </div>
@@ -314,12 +330,12 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="mediaWidth" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="mediaWidthLabel">ความกว้างแผ่นกรอง</label> 
-                            <input id="mediaWidth" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.01" oninput="calculateDesign()">
+                            <input id="mediaWidth" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.01" value="0.6" oninput="calculateDesign()">
                             <div id="mediaWidthUnit" class="text-xs text-slate-500 mt-1">m</div> 
                         </div>
                         <div>
                             <label for="mediaHeight" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="mediaHeightLabel">ความสูงแผ่นกรอง</label>
-                            <input id="mediaHeight" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.01" oninput="calculateDesign()"> 
+                            <input id="mediaHeight" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.01" value="0.9" oninput="calculateDesign()"> 
                             <div id="mediaHeightUnit" class="text-xs text-slate-500 mt-1">m</div>
                         </div>
                     </div>
@@ -331,12 +347,12 @@
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="sprayFlowRate" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="sprayFlowRateLabel">อัตราการไหลหัวสเปรย์</label>
-                            <input id="sprayFlowRate" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.1" oninput="calculateDesign()">
+                            <input id="sprayFlowRate" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.1" value="10" oninput="calculateDesign()">
                             <div id="sprayFlowRateUnit" class="text-xs text-slate-500 mt-1" data-lang-key="sprayFlowRateUnit">LPM (ลิตร/นาที)</div>
                         </div>
                         <div>
                             <label for="sprayDiameter" class="block text-sm font-medium mb-1 text-slate-700" data-lang-key="sprayDiameterLabel">เส้นผ่านศูนย์กลางครอบคลุม</label>
-                            <input id="sprayDiameter" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.01" oninput="calculateDesign()">
+                            <input id="sprayDiameter" type="number" class="w-full p-2 border border-slate-300 rounded-lg" step="0.01" value="0.7" oninput="calculateDesign()">
                             <div id="sprayDiameterUnit" class="text-xs text-slate-500 mt-1" data-lang-key="sprayDiameterUnit">m</div>
                         </div>
                     </div>
@@ -371,22 +387,77 @@
             </div>
         </section>
 
-        <section class="mt-6 card p-6">
-            <div class="flex flex-wrap items-center justify-between mb-4 gap-2 border-b pb-2">
+        <section class="mt-6 card p-6 border-t-4 border-indigo-600 shadow-sm" id="section-boq">
+            <div class="flex flex-wrap items-center justify-between mb-4 gap-3 border-b pb-3">
                 <div>
-                    <h2 class="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                        <span>2.5 รายการวัสดุและสเปกอุปกรณ์ (Bill of Materials & Equipment Sizing)</span>
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                            WUSEN Quotation Ref: 10.30--2610-042 (Option 2.2)
+                        </span>
+                        <span class="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Dynamic Real-Time BOQ & Pricing
+                        </span>
+                    </div>
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        <span>2.5 ตารางประมาณราคาและถอดแบบวัสดุอุปกรณ์ (Dynamic BOQ & Cost Estimation)</span>
                     </h2>
-                    <p class="text-xs text-slate-500 mt-0.5">ข้อมูลวิศวกรรมสำหรับนำไปจัดซื้อ จัดจ้าง และออกแบบระบบไฟฟ้า/ปั๊มน้ำ</p>
+                    <p class="text-xs text-slate-500 mt-0.5">ถอดรายการวัสดุและอุปกรณ์มาตรฐาน WUSEN ครบ 13 รายการ คำนวณจำนวนตามขนาดระบบจริง พร้อมแปลงสกุลเงิน USD และบาท (THB) แบบอัตโนมัติ</p>
                 </div>
-                <button type="button" onclick="copyBomToClipboard()" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                    <span>คัดลอกรายการ BOM</span>
-                </button>
+                
+                <!-- BOQ Controls: Exchange Rate & Freight Toggle & Export -->
+                <div class="flex flex-wrap items-center gap-2.5">
+                    <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1 rounded-lg text-xs">
+                        <label for="exchangeRateInput" class="font-semibold text-slate-600">อัตราแลกเปลี่ยน:</label>
+                        <span class="text-slate-400">1$ =</span>
+                        <input id="exchangeRateInput" type="number" step="0.1" value="36.0" class="w-16 p-1 border border-slate-300 rounded text-center font-bold text-indigo-700 bg-white" oninput="calculateDesign()">
+                        <span class="font-semibold text-slate-600">บาท</span>
+                    </div>
+
+                    <label class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs cursor-pointer hover:bg-slate-100 transition">
+                        <input id="includeFreightCheckbox" type="checkbox" checked class="rounded text-indigo-600 focus:ring-indigo-500" onchange="calculateDesign()">
+                        <span class="font-medium text-slate-700">รวมค่าขนส่ง 1x20GP CFR ท่าเรือกรุงเทพ ($2,700)</span>
+                    </label>
+
+                    <button type="button" onclick="exportBOQToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span>ส่งออก BOQ (.CSV)</span>
+                    </button>
+
+                    <button type="button" onclick="copyBomToClipboard()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition flex items-center gap-1 border border-slate-200">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                        <span>คัดลอก</span>
+                    </button>
+                </div>
             </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="p-3 bg-gradient-to-br from-indigo-50 to-white rounded-xl border border-indigo-100 shadow-xs">
+                    <span class="text-[11px] font-semibold text-indigo-700 uppercase block mb-1">ราคาสินค้าหน้าโรงงาน (FOB/Ex-work)</span>
+                    <div id="boq-kpi-subtotal-usd" class="text-lg font-extrabold text-slate-800">$0.00</div>
+                    <div id="boq-kpi-subtotal-thb" class="text-xs font-semibold text-indigo-600">฿0.00</div>
+                </div>
+                <div class="p-3 bg-gradient-to-br from-blue-50 to-white rounded-xl border border-blue-100 shadow-xs">
+                    <span class="text-[11px] font-semibold text-blue-700 uppercase block mb-1">ค่าขนส่งทางเรือ (1x20GP CFR)</span>
+                    <div id="boq-kpi-freight-usd" class="text-lg font-extrabold text-slate-800">$0.00</div>
+                    <div id="boq-kpi-freight-thb" class="text-xs font-semibold text-blue-600">฿0.00</div>
+                </div>
+                <div class="p-3 bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-200 shadow-xs">
+                    <span class="text-[11px] font-semibold text-emerald-800 uppercase block mb-1">ยอดรวมส่งถึงท่าเรือกรุงเทพ (CFR PAT)</span>
+                    <div id="boq-kpi-total-usd" class="text-xl font-black text-emerald-700">$0.00</div>
+                    <div id="boq-kpi-total-thb" class="text-xs font-bold text-emerald-600">฿0.00</div>
+                </div>
+                <div class="p-3 bg-gradient-to-br from-amber-50 to-white rounded-xl border border-amber-200 shadow-xs">
+                    <span class="text-[11px] font-semibold text-amber-800 uppercase block mb-1">ต้นทุนเฉลี่ย / ประสิทธิภาพ</span>
+                    <div id="boq-kpi-unit-area" class="text-sm font-bold text-slate-800">฿0 / m² แผงกรอง</div>
+                    <div id="boq-kpi-unit-fan" class="text-xs font-semibold text-amber-700">฿0 / พัดลม 1 ตัว</div>
+                </div>
+            </div>
+
+            <!-- BOQ Injected Container -->
             <div id="bomContainer" class="space-y-4">
-                <!-- BOM Injected Here -->
+                <!-- Dynamic BOQ Table Injected Here -->
             </div>
         </section>
 
@@ -434,15 +505,15 @@
     </div>
 
     <!-- AI / Expert Advisor Modal -->
-    <div id="geminiModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50" onclick="closeModal()">
+    <div id="expertModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50" onclick="closeModal()">
         <div class="card w-11/12 max-w-3xl max-h-[90vh] overflow-y-auto p-6" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-4">
-                 <h2 id="geminiModalTitle" class="text-xl font-semibold text-indigo-700" data-lang-key="modalTitle">✨ บทวิเคราะห์และคำแนะนำวิศวกรรม</h2>
+                 <h2 id="expertModalTitle" class="text-xl font-semibold text-indigo-700" data-lang-key="modalTitle">✨ บทวิเคราะห์และคำแนะนำวิศวกรรม</h2>
                  <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"> 
                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                  </button>
             </div>
-            <div id="llmOutput" class="p-4 bg-indigo-50 border border-indigo-100 rounded-lg min-h-[12rem] text-slate-700 leading-relaxed">
+            <div id="expertOutput" class="p-4 bg-indigo-50 border border-indigo-100 rounded-lg min-h-[12rem] text-slate-700 leading-relaxed">
                 <div class="flex justify-center items-center h-full"> 
                     <div class="spinner"></div>
                 </div>
@@ -456,10 +527,6 @@
             </div>
         </div>
     </div>
-
-    
-    </div>
-
 
     <script>
     const PI = Math.PI;
@@ -512,6 +579,10 @@
             installHeightLabel: "Installation Area Height",
             modelCoeffTitle: "Model Coefficients (for graph)",
             summaryTitle: "Initial Calculation Summary",
+            presetTitle: "Standard Farm Presets (1-Click Auto Design):",
+            btnSaveDesign: "Save Project",
+            btnLoadDesign: "Open Project",
+            btnResetDesign: "Reset Defaults",
             resultsTitle: "2.1 Preliminary Design Results",
             distributionTitle: "3-Face Aerodynamic Flow & Pressure Distribution",
             sideLeft: "Left Wing",
@@ -645,6 +716,10 @@
             installHeightLabel: "ความสูงพื้นที่ติดตั้ง",
             modelCoeffTitle: "สัมประสิทธิ์แบบจำลอง (สำหรับกราฟ)",
             summaryTitle: "สรุปข้อมูลคำนวณเบื้องต้น",
+            presetTitle: "ชุดมาตรฐานฟาร์มยอดนิยม (Quick Farm Presets):",
+            btnSaveDesign: "บันทึกโปรเจกต์ (JSON)",
+            btnLoadDesign: "นำเข้าโปรเจกต์",
+            btnResetDesign: "รีเซ็ตค่าเริ่มต้น",
             resultsTitle: "2.1 ผลลัพธ์การออกแบบเบื้องต้น",
             distributionTitle: "การกระจายตัวของลมและแรงดันแยก 3 ด้าน (3-Face Aerodynamics)",
             sideLeft: "ปีกซ้าย (Left Wing)",
@@ -1084,12 +1159,34 @@
             mediaHeight: 0.9,
             sprayFlowRate: 10,
             sprayDiameter: 0.7
+        },
+        wusenOpt22: {
+            nameTh: "โรงเรือนกักโรค Isolation House (WUSEN Option 2.2)",
+            nameEn: "Isolation House (WUSEN Opt 2.2)",
+            nFans: 9,
+            qFanMetric: 40000,
+            dFan: 1.27,
+            vFilter: 1.0,
+            dActual: 20.0,
+            hActual: 2.5,
+            layout: 'triple',
+            wLeft: 4.0,
+            wFront: 15.0,
+            wRight: 4.0,
+            wActual: 23.0,
+            mediaWidth: 0.27,
+            mediaHeight: 2.0,
+            sprayFlowRate: 10,
+            sprayDiameter: 0.7
         }
     };
 
     function applyPreset(key) {
         const p = farmPresets[key];
         if (!p) return;
+        if (currentUnit === 'imperial') {
+            setUnit('metric');
+        }
         getEl('nFans').value = p.nFans;
         getEl('qFanMetric').value = p.qFanMetric;
         getEl('dFan').value = p.dFan;
@@ -1495,130 +1592,353 @@
     }
 
     // -------------------------------------------------------------
-    // BILL OF MATERIALS (BOM) & EQUIPMENT SIZING SPECIFICATIONS
+    // DYNAMIC BOQ & COST ESTIMATION (WUSEN QUOTATION 10.30--2610-042 OPTION 2.2)
     // -------------------------------------------------------------
+    function calculateWusenBOQ(inp, res) {
+        const isTriple = res.isTriple;
+        const totalW = isFinite(res.A_actual_m2) ? (isTriple ? (inp.wLeft_m + inp.wFront_m + inp.wRight_m) : inp.wActual_m) : 0;
+        const h_actual = inp.hActual_m || 2.5;
+        const h_pad = Math.max(1.5, h_actual > 2.0 ? (h_actual - 0.5) : h_actual);
+        const area_pad = totalW * h_pad;
+
+        const rateEl = getEl('exchangeRateInput');
+        const exchangeRate = (rateEl && parseFloat(rateEl.value) > 0) ? parseFloat(rateEl.value) : 36.0;
+        const freightEl = getEl('includeFreightCheckbox');
+        const includeFreight = freightEl ? freightEl.checked : true;
+
+        // 1. Pad sheets (0.2705m standard width, thickness 45cm)
+        const pad_sheets = Math.max(1, Math.round(totalW / 0.2705));
+        const pad_unit_usd = 19.49 * (h_pad / 2.0);
+        const pad_total_usd = pad_sheets * pad_unit_usd;
+
+        // 2. FRP Frame (40x40mm)
+        const frame_qty = Math.round(area_pad * 10) / 10;
+        const frame_unit_usd = 17.85;
+        const frame_total_usd = frame_qty * frame_unit_usd;
+
+        // 3. Spray Nozzles & Tiers
+        const tiers = h_pad <= 1.8 ? 1 : (h_pad <= 2.6 ? 2 : 3);
+        const pitch = 0.8518;
+        const nozzles_per_tier = Math.max(1, Math.round(totalW / pitch));
+        const total_nozzles = nozzles_per_tier * tiers;
+
+        // Zonal allocation
+        let noz_left = 0, noz_right = 0, noz_front = total_nozzles;
+        if (isTriple && totalW > 0) {
+            noz_left = Math.round(inp.wLeft_m / pitch) * tiers;
+            noz_right = Math.round(inp.wRight_m / pitch) * tiers;
+            noz_front = Math.max(0, total_nozzles - (noz_left + noz_right));
+        }
+
+        // 4. Pump Sizing
+        const total_water_lpm = total_nozzles * (inp.sprayFlowRate_LPM || 10.0);
+        const total_water_m3h = total_water_lpm * 0.06;
+        let pump_model = "CA65-50-5.5kW, 380V, 3ph 50Hz";
+        let pump_unit_usd = 743.0;
+        if (total_water_m3h <= 18) {
+            pump_model = "CA50-32-3.0kW, 380V, 3ph 50Hz";
+            pump_unit_usd = 580.0;
+        } else if (total_water_m3h > 36) {
+            pump_model = "CA80-65-7.5kW, 380V, 3ph 50Hz";
+            pump_unit_usd = 920.0;
+        }
+        const pump_total_usd = pump_unit_usd;
+
+        // 5. Spray pipes & SS brackets (UPVC IN:4", OUT:3", SPRAY:φ32)
+        const pipes_total_usd = Math.round(totalW * 98.6087 * 100) / 100;
+
+        // 6. Spray Nozzles
+        const nozzle_unit_usd = 0.98;
+        const nozzle_total_usd = total_nozzles * nozzle_unit_usd;
+
+        // 7. SS304 Clamps
+        const clamp_unit_usd = 0.82;
+        const clamp_total_usd = total_nozzles * clamp_unit_usd;
+
+        // 8. Water supply valve
+        const valve_total_usd = 88.0;
+
+        // 9-12. Gutters (1.5m length)
+        let corner_pcs = 0, left_pcs = 1, right_pcs = 1, straight_pcs = 0;
+        if (isTriple) {
+            corner_pcs = 3;
+            straight_pcs = Math.max(0, Math.round(totalW / 1.5) + 2 - (corner_pcs + left_pcs + right_pcs));
+        } else {
+            straight_pcs = Math.max(0, Math.round(totalW / 1.5) - 2);
+        }
+        const gutter_unit_usd = 93.70;
+        const straight_total_usd = straight_pcs * gutter_unit_usd;
+        const corner_total_usd = corner_pcs * gutter_unit_usd;
+        const left_total_usd = left_pcs * gutter_unit_usd;
+        const right_total_usd = right_pcs * gutter_unit_usd;
+        const total_gutter_pcs = straight_pcs + corner_pcs + left_pcs + right_pcs;
+
+        // 13. Water retaining panels (Baffle FRP)
+        const baffle_qty = Math.round(totalW * 2.0 * 10) / 10;
+        const baffle_unit_usd = 13.39;
+        const baffle_total_usd = baffle_qty * baffle_unit_usd;
+
+        // 14. Intelligent Control Box
+        const ctrl_total_usd = 995.0;
+
+        const items = [
+            { no: 1, name_en: "Plastic deodorization evaporative pad", name_th: "แผ่นกรองพลาสติกดับกลิ่น WUSEN 5S", spec: `Thickness 45cm, ${fmt(totalW,1)}m * ${fmt(h_pad,1)}m`, unit: "EA", unit_th: "แผ่น", qty: pad_sheets, price_usd: pad_unit_usd, total_usd: pad_total_usd },
+            { no: 2, name_en: "Deodorizing filter material frame", name_th: "โครงยึดแผ่นกรอง FRP และอุปกรณ์สแตนเลส", spec: "FRP square tube 40*40mm, and stainless steel accessories", unit: "m²", unit_th: "ตร.ม.", qty: frame_qty, price_usd: frame_unit_usd, total_usd: frame_total_usd },
+            { no: 3, name_en: "Stainless steel circulating pump", name_th: "ปั๊มน้ำหมุนเวียนสแตนเลส", spec: pump_model, unit: "pcs", unit_th: "ตัว", qty: 1, price_usd: pump_unit_usd, total_usd: pump_total_usd },
+            { no: 4, name_en: "Spray pipes and pipe fittings, and Pipe bracket", name_th: "ชุดท่อสเปรย์ ข้อต่อ UPVC และแร็คยึดท่อสแตนเลส", spec: 'U-PVC (IN: 4"=dia114mm, OUT: 3"=dia89mm, SPRAY: φ32), SS angle iron & brackets', unit: "set", unit_th: "ชุด", qty: 1, price_usd: pipes_total_usd, total_usd: pipes_total_usd },
+            { no: 5, name_en: "Spray nozzle", name_th: "หัวสเปรย์น้ำแรงดันต่ำ", spec: `1/2" male thread (${tiers} spray tiers, ~0.85m pitch)`, unit: "pcs", unit_th: "หัว", qty: total_nozzles, price_usd: nozzle_unit_usd, total_usd: nozzle_total_usd },
+            { no: 6, name_en: "CLAMP", name_th: "แคลมป์รัดท่อหัวสเปรย์สแตนเลส 304", spec: "304 stainless steel clamp clip", unit: "pcs", unit_th: "ชิ้น", qty: total_nozzles, price_usd: clamp_unit_usd, total_usd: clamp_total_usd },
+            { no: 7, name_en: "Water supply system", name_th: "ชุดระบบจ่ายน้ำดีและวาล์วเติมน้ำ", spec: '1.2" Water Ball Valve and float level system', unit: "set", unit_th: "ชุด", qty: 1, price_usd: 88.0, total_usd: valve_total_usd },
+            { no: 8, name_en: "Circulating gutter (Standard straight)", name_th: "รางระบายน้ำหมุนเวียนท่อนตรง", spec: "Single gutter length: 1500mm, Without End Cap", unit: "pcs", unit_th: "ท่อน", qty: straight_pcs, price_usd: gutter_unit_usd, total_usd: straight_total_usd },
+            { no: 9, name_en: "Circulating gutter (Corner)", name_th: "รางระบายน้ำมุมสำหรับระบบ U-Shape", spec: "Single gutter length: 1500mm, Corner Water Gutter", unit: "pcs", unit_th: "ท่อน", qty: corner_pcs, price_usd: gutter_unit_usd, total_usd: corner_total_usd },
+            { no: 10, name_en: "Circulating gutter (Left End Cap)", name_th: "รางระบายน้ำพร้อมฝาปิดปลายด้านซ้าย", spec: "Single gutter length: 1500mm, With Left End Cap", unit: "pcs", unit_th: "ท่อน", qty: left_pcs, price_usd: gutter_unit_usd, total_usd: left_total_usd },
+            { no: 11, name_en: "Circulating gutter (Right End Cap)", name_th: "รางระบายน้ำพร้อมฝาปิดปลายด้านขวา", spec: "Single gutter length: 1500mm, With Right End Cap", unit: "pcs", unit_th: "ท่อน", qty: right_pcs, price_usd: gutter_unit_usd, total_usd: right_total_usd },
+            { no: 12, name_en: "Water retaining panels and accessories", name_th: "แผงดักละอองน้ำ Baffle Plate (FRP) พร้อมขายึด", spec: "Includes bracket and baffle plate. FRP roofing panel", unit: "m", unit_th: "เมตร", qty: baffle_qty, price_usd: baffle_unit_usd, total_usd: baffle_total_usd },
+            { no: 13, name_en: "Intelligent control box (1:1)", name_th: "ตู้ควบคุมอัจฉริยะ PLC + LCD สแตนเลส (1:1)", spec: "Stainless steel cabinet, PLC + LCD, remote ON/OFF, phase loss/overload/low water protection", unit: "pcs", unit_th: "ตู้", qty: 1, price_usd: 995.0, total_usd: ctrl_total_usd }
+        ];
+
+        let subtotal_usd = 0;
+        items.forEach(it => subtotal_usd += it.total_usd);
+        const subtotal_thb = subtotal_usd * exchangeRate;
+
+        const freight_usd = includeFreight ? 2700.0 : 0.0;
+        const freight_thb = freight_usd * exchangeRate;
+
+        const total_cfr_usd = subtotal_usd + freight_usd;
+        const total_cfr_thb = total_cfr_usd * exchangeRate;
+
+        const cost_per_m2_thb = area_pad > 0 ? (total_cfr_thb / area_pad) : 0;
+        const nFans = inp.nFans || 1;
+        const cost_per_fan_thb = total_cfr_thb / nFans;
+
+        return {
+            items, totalW, h_pad, area_pad, tiers, total_nozzles,
+            noz_breakdown: { left: noz_left, front: noz_front, right: noz_right },
+            total_water_lpm, total_water_m3h, pump_model,
+            subtotal_usd, subtotal_thb,
+            freight_usd, freight_thb, include_freight: includeFreight,
+            total_cfr_usd, total_cfr_thb,
+            cost_per_m2_thb, cost_per_fan_thb, exchangeRate
+        };
+    }
+
     function renderBomSection(inp, res) {
         const container = getEl('bomContainer');
         if (!container) return;
 
-        const totalW = isFinite(res.A_actual_m2) ? (res.isTriple ? (inp.wLeft_m + inp.wFront_m + inp.wRight_m) : inp.wActual_m) : 0;
-        const h = inp.hActual_m;
+        const boq = calculateWusenBOQ(inp, res);
+        res.boqData = boq;
+        const isTh = currentLanguage === 'th';
+        const rate = boq.exchangeRate;
 
-        // Framing SS304 Length estimation (Perimeter + Column vertical mullions every 0.6m)
-        const numColumns = Math.ceil(totalW / Math.max(inp.mediaWidth_m, 0.6));
-        const frameLength_m = (totalW * 2) + (h * (numColumns + 1));
+        // Update KPI Cards
+        const subUSD = getEl('boq-kpi-subtotal-usd');
+        const subTHB = getEl('boq-kpi-subtotal-thb');
+        if (subUSD) subUSD.textContent = '$' + boq.subtotal_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (subTHB) subTHB.textContent = '฿' + boq.subtotal_thb.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // Pump Sizing (with 15% safety factor)
-        const pumpFlowLPM = res.totalWater_LPM * 1.15;
-        const pumpFlowM3H = pumpFlowLPM * 0.06;
-        const pumpHead_m = 22; // 2.2 bar pressure
-        const pumpPower_kW = (pumpFlowM3H * 1000 * 9.81 * pumpHead_m) / (3600 * 1000 * 0.60);
-        const pumpPower_HP = pumpPower_kW * 1.341;
+        const frUSD = getEl('boq-kpi-freight-usd');
+        const frTHB = getEl('boq-kpi-freight-thb');
+        if (frUSD) frUSD.textContent = '$' + boq.freight_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (frTHB) frTHB.textContent = '฿' + boq.freight_thb.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // Pipe Sizing (Header velocity ~ 1.3 m/s)
-        const pipeFlowM3S = (res.totalWater_LPM / 60) / 1000;
-        const pipeDia_mm = Math.sqrt((4 * pipeFlowM3S) / (PI * 1.3)) * 1000;
-        let pipeNominal = '2 นิ้ว (Ø 50 mm)';
-        if (pipeDia_mm > 65) pipeNominal = '3 นิ้ว (Ø 75 mm)';
-        else if (pipeDia_mm > 48) pipeNominal = '2.5 นิ้ว (Ø 65 mm)';
-        else if (pipeDia_mm < 35) pipeNominal = '1.5 นิ้ว (Ø 40 mm)';
+        const totUSD = getEl('boq-kpi-total-usd');
+        const totTHB = getEl('boq-kpi-total-thb');
+        if (totUSD) totUSD.textContent = '$' + boq.total_cfr_usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (totTHB) totTHB.textContent = '฿' + boq.total_cfr_thb.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // Water Sump Tank Volume (12 minutes reserve)
-        const sumpVolume_L = Math.ceil(res.totalWater_LPM * 12);
+        const unitArea = getEl('boq-kpi-unit-area');
+        const unitFan = getEl('boq-kpi-unit-fan');
+        if (unitArea) unitArea.textContent = '฿' + Math.round(boq.cost_per_m2_thb).toLocaleString() + ' / m² แผงกรอง';
+        if (unitFan) unitFan.textContent = '฿' + Math.round(boq.cost_per_fan_thb).toLocaleString() + ' / พัดลม 1 ตัว';
+
+        let rowsHtml = '';
+        boq.items.forEach(it => {
+            const name = isTh ? it.name_th : it.name_en;
+            const unit = isTh ? it.unit_th : it.unit;
+            const thb = it.total_usd * rate;
+            rowsHtml += `
+                <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                    <td class="py-2 px-2 text-center font-bold text-slate-500">${it.no}</td>
+                    <td class="py-2 px-3 font-semibold text-slate-800">${name}</td>
+                    <td class="py-2 px-3 text-slate-600 text-[11px]">${it.spec}</td>
+                    <td class="py-2 px-2 text-center text-slate-600">${unit}</td>
+                    <td class="py-2 px-2 text-right font-bold text-indigo-700">${typeof it.qty === 'number' ? it.qty.toLocaleString() : it.qty}</td>
+                    <td class="py-2 px-3 text-right text-slate-600">$${it.price_usd.toFixed(2)}</td>
+                    <td class="py-2 px-3 text-right font-semibold text-slate-800">$${it.total_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="py-2 px-3 text-right font-bold text-emerald-700">฿${thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                </tr>
+            `;
+        });
+
+        const freightRowHtml = boq.include_freight ? `
+            <tr class="hover:bg-blue-50/50 transition border-b border-blue-100 bg-blue-50/30">
+                <td class="py-2 px-2 text-center font-bold text-blue-600">14</td>
+                <td class="py-2 px-3 font-semibold text-blue-900">${isTh ? 'ค่าขนส่งทางเรือ (1x20GP Freight CFR Bangkok Port)' : 'Ocean Freight (1X20GP CFR Bangkok PAT Port)'}</td>
+                <td class="py-2 px-3 text-blue-700 text-[11px]">${isTh ? 'ตู้คอนเทนเนอร์ 20GP ถึงท่าเรือคลองเตย กรุงเทพฯ' : '1x20GP container shipping to Bangkok Port, Thailand'}</td>
+                <td class="py-2 px-2 text-center text-blue-700">${isTh ? 'ตู้' : 'container'}</td>
+                <td class="py-2 px-2 text-right font-bold text-blue-800">1</td>
+                <td class="py-2 px-3 text-right text-blue-700">$${boq.freight_usd.toFixed(2)}</td>
+                <td class="py-2 px-3 text-right font-semibold text-blue-900">$${boq.freight_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="py-2 px-3 text-right font-bold text-blue-700">฿${boq.freight_thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            </tr>
+        ` : '';
 
         container.innerHTML = `
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left border border-slate-200 rounded-lg overflow-hidden">
-                    <thead class="bg-slate-100 text-slate-700 font-semibold border-b">
+            <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-xs">
+                <table class="w-full text-xs text-left text-slate-700">
+                    <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                         <tr>
-                            <th class="p-2.5">ลำดับ</th>
-                            <th class="p-2.5">รายการอุปกรณ์ (Equipment Item)</th>
-                            <th class="p-2.5 text-center">จำนวน</th>
-                            <th class="p-2.5 text-center">หน่วย</th>
-                            <th class="p-2.5">ข้อมูลจำเพาะทางวิศวกรรม (Engineering Specifications)</th>
+                            <th class="py-2.5 px-2 text-center w-10">ลำดับ</th>
+                            <th class="py-2.5 px-3">รายการวัสดุ / อุปกรณ์</th>
+                            <th class="py-2.5 px-3">รายละเอียดคุณลักษณะ (Specification)</th>
+                            <th class="py-2.5 px-2 text-center w-14">หน่วย</th>
+                            <th class="py-2.5 px-2 text-right w-16">จำนวน</th>
+                            <th class="py-2.5 px-3 text-right w-24">ราคา/หน่วย (USD)</th>
+                            <th class="py-2.5 px-3 text-right w-28">รวมเงิน (USD)</th>
+                            <th class="py-2.5 px-3 text-right w-32">รวมเงิน (THB)</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-200 text-slate-700">
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-2.5 text-center font-bold">1</td>
-                            <td class="p-2.5 font-bold text-slate-800">แผ่นกรองกลิ่น WUSEN 5S Grid Deodorization Media</td>
-                            <td class="p-2.5 text-center font-bold text-indigo-700 text-sm">${fmt(res.numPieces, 0)}</td>
-                            <td class="p-2.5 text-center">แผ่น</td>
-                            <td class="p-2.5">ขนาด ${fmt(inp.mediaWidth_m*1000, 0)} x ${fmt(inp.mediaHeight_m*1000, 0)} x 150 mm (หนา 15 cm) ผลิตจากพลาสติกพอลิเมอร์ทน UV สารเคมี</td>
-                        </tr>
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-2.5 text-center font-bold">2</td>
-                            <td class="p-2.5 font-semibold">หัวสเปรย์น้ำ Full Cone Nozzle</td>
-                            <td class="p-2.5 text-center font-bold text-indigo-700 text-sm">${fmt(res.numNozzles, 0)}</td>
-                            <td class="p-2.5 text-center">หัว</td>
-                            <td class="p-2.5">เกลียว 1/2" หรือ 3/8" วัสดุ PVDF / สแตนเลส อัตราฉีด ${fmt(inp.sprayFlowRate_LPM, 1)} LPM ที่ 2.0 bar มุมสเปรย์ 90°–120°</td>
-                        </tr>
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-2.5 text-center font-bold">3</td>
-                            <td class="p-2.5 font-semibold">ปั๊มน้ำหมุนเวียน (Recirculation Water Pump)</td>
-                            <td class="p-2.5 text-center font-bold text-slate-800">1 – 2</td>
-                            <td class="p-2.5 text-center">ชุด</td>
-                            <td class="p-2.5">อัตราการสูบขั้นต่ำ <strong>${fmt(pumpFlowLPM, 0)} LPM (${fmt(pumpFlowM3H, 1)} m³/h)</strong> แรงดันยก <strong>${pumpHead_m} m</strong> มอเตอร์แนะนำ <strong>${fmt(pumpPower_HP, 1)} HP (${fmt(pumpPower_kW, 1)} kW)</strong> IP55</td>
-                        </tr>
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-2.5 text-center font-bold">4</td>
-                            <td class="p-2.5 font-semibold">ท่อเมนจ่ายน้ำ (Main Distribution Header Pipe)</td>
-                            <td class="p-2.5 text-center font-bold text-slate-800">${fmt(totalW, 1)}</td>
-                            <td class="p-2.5 text-center">เมตร</td>
-                            <td class="p-2.5">ท่อ PVC Class 8.5/13.5 หรือ PE100 ขนาดแนะนำ <strong>${pipeNominal}</strong> (ความเร็วน้ำในท่อไม่เกิน 1.3 m/s)</td>
-                        </tr>
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-2.5 text-center font-bold">5</td>
-                            <td class="p-2.5 font-semibold">โครงสร้างรับแผงกรองสแตนเลส (SS304 Mounting Structure)</td>
-                            <td class="p-2.5 text-center font-bold text-slate-800">~${fmt(frameLength_m, 0)}</td>
-                            <td class="p-2.5 text-center">เมตร</td>
-                            <td class="p-2.5">โครงสแตนเลสเกรด 304 หรือโครงสร้างไฟเบอร์กลาส FRP กันสนิมจากไอแอมโมเนียและสารเคมี</td>
-                        </tr>
-                        <tr class="hover:bg-slate-50">
-                            <td class="p-2.5 text-center font-bold">6</td>
-                            <td class="p-2.5 font-semibold">ถังพักน้ำหมุนเวียนและรางรับน้ำ (Sump Basin Tank)</td>
-                            <td class="p-2.5 text-center font-bold text-slate-800">ขั้นต่ำ ${fmt(sumpVolume_L, 0)}</td>
-                            <td class="p-2.5 text-center">ลิตร</td>
-                            <td class="p-2.5">พร้อมระบบลูกลอยเติมน้ำอัตโนมัติ (Auto-Make-up Valve), ตะแกรงกรองขยะหน้าปั๊ม และวาล์วเดรนล้างตะกอน</td>
-                        </tr>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                        ${rowsHtml}
+                        ${freightRowHtml}
                     </tbody>
+                    <tfoot class="bg-slate-50 font-bold border-t-2 border-slate-300 text-slate-800">
+                        <tr>
+                            <td colspan="6" class="py-2 px-3 text-right text-slate-600">${isTh ? 'ราคาสินค้าหน้าโรงงาน (Subtotal Ex-work FOB):' : 'Subtotal Ex-work (FOB Wusen Factory):'}</td>
+                            <td class="py-2 px-3 text-right text-indigo-900 text-sm">$${boq.subtotal_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td class="py-2 px-3 text-right text-indigo-700 text-sm">฿${boq.subtotal_thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        </tr>
+                        ${boq.include_freight ? `
+                        <tr>
+                            <td colspan="6" class="py-2 px-3 text-right text-slate-600">${isTh ? 'ค่าขนส่งทางเรือ (1x20GP Freight CFR):' : 'Ocean Freight (1x20GP CFR):'}</td>
+                            <td class="py-2 px-3 text-right text-blue-900 text-sm">$${boq.freight_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td class="py-2 px-3 text-right text-blue-700 text-sm">฿${boq.freight_thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        </tr>` : ''}
+                        <tr class="bg-emerald-50 text-emerald-950 font-black text-sm border-t border-emerald-200">
+                            <td colspan="6" class="py-2.5 px-3 text-right text-emerald-900">${isTh ? 'ยอดรวมส่งถึงท่าเรือกรุงเทพ (Grand Total CFR Bangkok Port):' : 'Grand Total CFR Bangkok Port (PAT), Thailand:'}</td>
+                            <td class="py-2.5 px-3 text-right text-emerald-700">$${boq.total_cfr_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td class="py-2.5 px-3 text-right text-emerald-700">฿${boq.total_cfr_thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         `;
     }
 
-    function copyBomToClipboard() {
-        const res = lastCalculationResults;
-        const inp = lastCalculationInputs;
-        if (!res || !res.numPieces) {
-            alert('กรุณาคำนวณข้อมูลก่อนคัดลอก');
+    function exportBOQToCSV() {
+        if (!lastCalculationResults || !lastCalculationResults.boqData) {
+            alert(currentLanguage === 'th' ? 'กรุณารอการคำนวณผลลัพธ์' : 'Please wait for calculation.');
             return;
         }
+        const boq = lastCalculationResults.boqData;
+        const isTh = currentLanguage === 'th';
+        const rate = boq.exchangeRate;
 
-        const text = `[รายการอุปกรณ์ระบบกรองกลิ่น WUSEN 5S - บริษัท เค.เอส.พี. อุปกรณ์ จำกัด]
-1. แผ่นกรองกลิ่น WUSEN 5S: ${fmt(res.numPieces, 0)} แผ่น (ขนาด ${fmt(inp.mediaWidth_m*100, 0)}x${fmt(inp.mediaHeight_m*100, 0)}x15 cm)
-2. หัวสเปรย์ Full Cone: ${fmt(res.numNozzles, 0)} หัว (${fmt(inp.sprayFlowRate_LPM, 1)} LPM @ 2 bar)
-3. ปั๊มน้ำหมุนเวียน: ${fmt(res.totalWater_LPM * 1.15, 0)} LPM (Head 20–25 m)
-4. ปริมาณน้ำหมุนเวียนรวม: ${fmt(res.totalWater_LPM, 1)} LPM (${fmt(res.totalWater_LPM * 0.06, 1)} m³/h)
-5. ถังพักน้ำหมุนเวียน: ไม่น้อยกว่า ${fmt(res.totalWater_LPM * 12, 0)} ลิตร`;
+        let csv = '﻿'; // UTF-8 BOM
+        csv += `"${isTh ? 'ใบประมาณราคาและถอดแบบวัสดุอุปกรณ์ระบบกรองกลิ่น WUSEN 5S' : 'Bill of Quantities (BOQ) - WUSEN 5S Odor Control System'}"
+`;
+        csv += `"${isTh ? 'อ้างอิงใบเสนอราคา' : 'Reference Quotation'}","Shandong Wusen 10.30--2610-042 (Option 2.2 Isolation House)"
+`;
+        csv += `"${isTh ? 'วันที่ออกเอกสาร' : 'Date'}","${new Date().toLocaleDateString()}"
+`;
+        csv += `"${isTh ? 'ขนาดพื้นที่แผงกรอง' : 'Filter Area'}","${fmt(boq.area_pad, 1)} m² (${fmt(boq.totalW, 1)}m x ${fmt(boq.h_pad, 1)}m)"
+`;
+        csv += `"${isTh ? 'อัตราแลกเปลี่ยน' : 'Exchange Rate'}","1 USD = ${fmt(rate, 2)} THB"
+
+`;
+
+        csv += `"No.","${isTh ? 'รายการวัสดุ/อุปกรณ์' : 'Item Description'}","${isTh ? 'คุณลักษณะเฉพาะ (Specification)' : 'Specification'}","${isTh ? 'หน่วย' : 'Unit'}","${isTh ? 'จำนวน' : 'Qty'}","${isTh ? 'ราคา/หน่วย (USD)' : 'Unit Price (USD)'}","${isTh ? 'รวมเงิน (USD)' : 'Total (USD)'}","${isTh ? 'รวมเงิน (THB)' : 'Total (THB)'}"
+`;
+
+        boq.items.forEach(it => {
+            const name = isTh ? it.name_th : it.name_en;
+            const unit = isTh ? it.unit_th : it.unit;
+            const thb = it.total_usd * rate;
+            csv += `"${it.no}","${name}","${it.spec}","${unit}","${it.qty}","${it.price_usd.toFixed(2)}","${it.total_usd.toFixed(2)}","${thb.toFixed(2)}"
+`;
+        });
+
+        csv += `
+,"${isTh ? 'ราคาสินค้าหน้าโรงงาน (Subtotal FOB/Ex-work)' : 'Subtotal (FOB/Ex-work)'}","","","","","${boq.subtotal_usd.toFixed(2)}","${(boq.subtotal_usd * rate).toFixed(2)}"
+`;
+        if (boq.include_freight) {
+            csv += `,"${isTh ? 'ค่าขนส่งตู้ 1x20GP CFR ท่าเรือกรุงเทพ' : 'Ocean Freight 1x20GP CFR Bangkok'}","","","","","${boq.freight_usd.toFixed(2)}","${(boq.freight_usd * rate).toFixed(2)}"
+`;
+        }
+        csv += `,"${isTh ? 'ยอดรวมส่งถึงท่าเรือกรุงเทพ (Grand Total CFR Bangkok)' : 'Grand Total CFR Bangkok Port'}","","","","","${boq.total_cfr_usd.toFixed(2)}","${(boq.total_cfr_usd * rate).toFixed(2)}"
+`;
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `BOQ_KSP_WUSEN_Odor_System_${fmt(boq.totalW, 0)}x${fmt(boq.h_pad, 1)}m_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function copyBomToClipboard() {
+        if (!lastCalculationResults || !lastCalculationResults.boqData) {
+            alert(currentLanguage === 'th' ? 'กรุณารอการคำนวณผลลัพธ์' : 'Please wait for calculation.');
+            return;
+        }
+        const boq = lastCalculationResults.boqData;
+        const isTh = currentLanguage === 'th';
+        const rate = boq.exchangeRate;
+
+        let text = `${isTh ? 'ใบประมาณราคาและถอดแบบวัสดุอุปกรณ์ระบบกรองกลิ่น WUSEN 5S' : 'BOQ - WUSEN 5S Odor Control System'}
+`;
+        text += `${isTh ? 'อ้างอิงใบเสนอราคา' : 'Reference Quotation'}: Shandong Wusen 10.30--2610-042 (Option 2.2)
+`;
+        text += `${isTh ? 'ขนาดพื้นที่แผงกรอง' : 'Filter Area'}: ${fmt(boq.area_pad, 1)} m² (${fmt(boq.totalW, 1)}m x ${fmt(boq.h_pad, 1)}m)
+`;
+        text += `อัตราแลกเปลี่ยน: 1 USD = ${fmt(rate, 2)} THB
+`;
+        text += `------------------------------------------------------------------------
+`;
+        text += `No.	Item	Qty	Unit	Total(USD)	Total(THB)
+`;
+        text += `------------------------------------------------------------------------
+`;
+
+        boq.items.forEach(it => {
+            const name = isTh ? it.name_th : it.name_en;
+            const unit = isTh ? it.unit_th : it.unit;
+            const thb = it.total_usd * rate;
+            text += `${it.no}	${name}	${it.qty}	${unit}	$${it.total_usd.toFixed(2)}	฿${thb.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})}
+`;
+        });
+        text += `------------------------------------------------------------------------
+`;
+        text += `Subtotal (FOB Ex-work):				$${boq.subtotal_usd.toFixed(2)}	฿${boq.subtotal_thb.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})}
+`;
+        if (boq.include_freight) {
+            text += `Freight (1x20GP CFR):				$${boq.freight_usd.toFixed(2)}	฿${boq.freight_thb.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})}
+`;
+        }
+        text += `Grand Total CFR Bangkok:				$${boq.total_cfr_usd.toFixed(2)}	฿${boq.total_cfr_thb.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})}
+`;
 
         navigator.clipboard.writeText(text).then(() => {
-            alert('คัดลอกรายการ BOM ไปยังคลิปบอร์ดเรียบร้อยแล้ว!');
+            alert(isTh ? '✅ คัดลอกตาราง BOQ เรียบร้อยแล้ว (สามารถนำไปวางใน Excel หรือ Word ได้ทันที)' : '✅ BOQ table copied to clipboard!');
         }).catch(err => {
-            alert('ไม่สามารถคัดลอกได้: ' + err);
+            alert('Error copying to clipboard: ' + err);
         });
     }
 
-function calculateDesign() {
+    // -------------------------------------------------------------
+    // MAIN CALCULATION ENGINE
+    // -------------------------------------------------------------
+    function calculateDesign() {
         const getVal = id => {
             const el = getEl(id);
             return el ? parseFloat(cleanNumStr(el.value)) : NaN;
-        }; 
+        };
 
-        const isImperial = currentUnit === 'imperial'; 
+        const isImperial = currentUnit === 'imperial';
         const isTriple = currentLayoutMode === 'triple';
 
-        // Check required fields based on layout mode
         let baseFields = ['qFanMetric', 'nFans', 'vFilter', 'dFan', 'hActual', 'dActual', 'coeffA', 'coeffB'];
         if (isTriple) {
             baseFields.push('wLeft', 'wFront', 'wRight');
@@ -1626,12 +1946,15 @@ function calculateDesign() {
             baseFields.push('wActual');
         }
 
-        const baseInputsInvalid = baseFields.some(id => isNaN(getVal(id)));
-        const mediaInputsInvalid = isNaN(getVal('mediaWidth')) || isNaN(getVal('mediaHeight'));
-        const sprayInputsInvalid = isNaN(getVal('sprayFlowRate')) || isNaN(getVal('sprayDiameter'));
+        const baseInputsInvalid = baseFields.some(id => {
+            const val = getVal(id);
+            return isNaN(val) || (id !== 'coeffB' && val <= 0);
+        });
+        const mediaInputsInvalid = isNaN(getVal('mediaWidth')) || isNaN(getVal('mediaHeight')) || getVal('mediaWidth') <= 0 || getVal('mediaHeight') <= 0;
+        const sprayInputsInvalid = isNaN(getVal('sprayFlowRate')) || isNaN(getVal('sprayDiameter')) || getVal('sprayFlowRate') <= 0 || getVal('sprayDiameter') <= 0;
 
         if (baseInputsInvalid) {
-            getEl('results-container').innerHTML = `<p class="text-center text-slate-500 py-8">${translations[currentLanguage].error_fill_all_fields}</p>`; 
+            getEl('results-container').innerHTML = `<p class="text-center text-slate-500 py-8">${translations[currentLanguage].error_fill_all_fields}</p>`;
             getEl('summary-container').innerHTML = `<p class="text-center text-slate-500 col-span-full">${translations[currentLanguage].error_summary}</p>`;
             getEl('explanation-container').innerHTML = `<p class="text-center text-slate-500 py-4">${translations[currentLanguage].error_summary}</p>`;
             getEl('distributionCard').classList.add('hidden');
@@ -1642,21 +1965,21 @@ function calculateDesign() {
         }
 
         if (mediaInputsInvalid) {
-             getEl('media-results-container').innerHTML = `<p class="text-center text-slate-500 py-4">${translations[currentLanguage].error_filter_size}</p>`;
+            getEl('media-results-container').innerHTML = `<p class="text-center text-slate-500 py-4">${translations[currentLanguage].error_filter_size}</p>`;
         }
-        if(sprayInputsInvalid) {
+        if (sprayInputsInvalid) {
             getEl('spray-results-container').innerHTML = `<p class="text-center text-slate-500 py-4">${translations[currentLanguage].error_spray_inputs}</p>`;
         }
 
         // Retrieve & normalize input values to SI units
         const qFan_m3h = getVal('qFanMetric');
         const nFans = getVal('nFans');
-        const vFilter_ms = isImperial ? getVal('vFilter') / CONV_MS_TO_FPM : getVal('vFilter'); 
+        const vFilter_ms = isImperial ? getVal('vFilter') / CONV_MS_TO_FPM : getVal('vFilter');
         const dFan_m = isImperial ? getVal('dFan') / CONV_M_TO_FT : getVal('dFan');
         const hActual_m = isImperial ? getVal('hActual') / CONV_M_TO_FT : getVal('hActual');
-        const dActual_m = isImperial ? getVal('dActual') / CONV_M_TO_FT : getVal('dActual'); 
+        const dActual_m = isImperial ? getVal('dActual') / CONV_M_TO_FT : getVal('dActual');
         const mediaWidth_m = isImperial ? getVal('mediaWidth') / CONV_M_TO_FT : getVal('mediaWidth');
-        const mediaHeight_m = isImperial ? getVal('mediaHeight') / CONV_M_TO_FT : getVal('mediaHeight'); 
+        const mediaHeight_m = isImperial ? getVal('mediaHeight') / CONV_M_TO_FT : getVal('mediaHeight');
         const a_coeff = getVal('coeffA');
         const b_coeff = getVal('coeffB');
         const sprayFlowRate_LPM = getVal('sprayFlowRate');
@@ -1681,33 +2004,31 @@ function calculateDesign() {
 
             // Update badge
             const badgeW = isImperial ? `${fmt(wActual_m * CONV_M_TO_FT, 1)} ft` : `${fmt(wActual_m, 1)} m`;
-            getEl('uShapeTotalWidthBadge').textContent = currentLanguage === 'th' ? `ความกว้างรวม: ${badgeW}` : `Total Width: ${badgeW}`;
+            const badgeEl = getEl('uShapeTotalWidthBadge');
+            if (badgeEl) badgeEl.textContent = (currentLanguage === 'th' ? 'ความกว้างรวม: ' : 'Total Width: ') + badgeW;
         } else {
             wActual_m = isImperial ? getVal('wActual') / CONV_M_TO_FT : getVal('wActual');
             A_actual_m2 = wActual_m * hActual_m;
         }
 
-        // Flow and Primary Aerodynamics
         const Q_total_m3h = qFan_m3h * nFans;
-        const Q_total_m3s = Q_total_m3h / 3600;
-        const A_fan_total_m2 = (PI * (dFan_m / 2) ** 2) * nFans; 
-        const V_initial_ms = Q_total_m3s / A_fan_total_m2;
-        const A_filter_m2_req = Q_total_m3s / vFilter_ms; 
-        const v_face_actual_ms = Q_total_m3s / A_actual_m2; // Average Face Velocity
+        const A_filter_m2_req = (Q_total_m3h / 3600) / vFilter_ms;
+        const A_fan_m2 = PI * Math.pow(dFan_m / 2, 2);
+        const A_fan_total_m2 = A_fan_m2 * nFans;
+        const V_initial_ms = (Q_total_m3h / 3600) / A_fan_total_m2;
+        const v_face_actual_ms = (Q_total_m3h / 3600) / A_actual_m2;
+
         const vActualJet_ms = V_initial_ms / (1 + a_coeff * dActual_m + b_coeff * Math.pow(dActual_m, 2));
 
-        // 3-Face Aerodynamic Flow Distribution Model
-        let distributionData = null;
-        let effective_velocity_for_pressure = v_face_actual_ms;
         let P_filter_pa = 0;
         let removalRate_pct = 0;
+        let distributionData = null;
+        let effective_velocity_for_pressure = v_face_actual_ms;
 
         if (isTriple) {
-            // Air jet carries straight forward momentum toward front face
-            // Side wings require turning 90 degrees (Turning Loss factor ~ 0.85)
-            const jetRatio = Math.max(1.0, vActualJet_ms / Math.max(v_face_actual_ms, 0.1));
-            const front_bias = 1.0 + 0.35 * Math.min(jetRatio - 1.0, 3.0); 
-            const side_turning_factor = 0.85; 
+            const jetRatio = Math.max(vActualJet_ms / Math.max(v_face_actual_ms, 0.01), 1.0);
+            const front_bias = 1.0 + 0.35 * Math.min(jetRatio - 1.0, 3.0);
+            const side_turning_factor = 0.85;
 
             const weight_front = A_front_m2 * front_bias;
             const weight_left = A_left_m2 * side_turning_factor;
@@ -1730,11 +2051,9 @@ function calculateDesign() {
             const r_left_pct = getRemovalRate_pct(v_left_ms);
             const r_right_pct = getRemovalRate_pct(v_right_ms);
 
-            // System pressure drop is governed by the highest resistance path (worst-case face)
             P_filter_pa = Math.max(P_front_pa, P_left_pa, P_right_pa);
             effective_velocity_for_pressure = v_front_ms;
 
-            // Flow-weighted average odor removal rate
             removalRate_pct = (Q_front_m3h * r_front_pct + Q_left_m3h * r_left_pct + Q_right_m3h * r_right_pct) / Q_total_m3h;
 
             distributionData = {
@@ -1745,7 +2064,6 @@ function calculateDesign() {
                 front_bias: front_bias
             };
         } else {
-            // Single face: Blended velocity model with jet penalty
             if (vActualJet_ms > v_face_actual_ms) {
                 effective_velocity_for_pressure += (vActualJet_ms - v_face_actual_ms) * 0.5;
             }
@@ -1772,43 +2090,50 @@ function calculateDesign() {
             }
         }
 
-        // Spray System Calculation (with 20% spray overlap factor)
+        // Spray System Calculation (Header-Line Multi-Tier Model matching Wusen Quotation Ref: 10.30--2610-042)
         let A_nozzle_m2 = NaN, numNozzles = NaN, totalWater_LPM = NaN;
         let sprayBreakdown = null;
+        let sprayTiers = 2;
         if (!sprayInputsInvalid && isFinite(A_actual_m2)) {
-            A_nozzle_m2 = (PI * (sprayDiameter_m / 2) ** 2);
-            if (A_nozzle_m2 > 0) {
-                const overlapFactor = 1.20; // 20% overlap coverage
-                if (isTriple) {
-                    const nozzles_left = Math.ceil((A_left_m2 * overlapFactor) / A_nozzle_m2);
-                    const nozzles_front = Math.ceil((A_front_m2 * overlapFactor) / A_nozzle_m2);
-                    const nozzles_right = Math.ceil((A_right_m2 * overlapFactor) / A_nozzle_m2);
-                    numNozzles = nozzles_left + nozzles_front + nozzles_right;
-                    sprayBreakdown = { left: nozzles_left, front: nozzles_front, right: nozzles_right, total: numNozzles };
-                } else {
-                    numNozzles = Math.ceil((A_actual_m2 * overlapFactor) / A_nozzle_m2);
-                }
-                totalWater_LPM = numNozzles * sprayFlowRate_LPM;
+            A_nozzle_m2 = (PI * Math.pow(sprayDiameter_m / 2, 2));
+            const w_total_effective = isTriple ? (wLeft_m + wFront_m + wRight_m) : wActual_m;
+            sprayTiers = hActual_m <= 1.8 ? 1 : (hActual_m <= 2.6 ? 2 : 3);
+            const pitch = 0.8518;
+
+            if (isTriple) {
+                const noz_left_tier = Math.round(wLeft_m / pitch);
+                const noz_right_tier = Math.round(wRight_m / pitch);
+                const noz_front_tier = Math.max(1, Math.round(wFront_m / pitch));
+                const nozzles_left = noz_left_tier * sprayTiers;
+                const nozzles_front = noz_front_tier * sprayTiers;
+                const nozzles_right = noz_right_tier * sprayTiers;
+                numNozzles = nozzles_left + nozzles_front + nozzles_right;
+                sprayBreakdown = { left: nozzles_left, front: nozzles_front, right: nozzles_right, total: numNozzles, tiers: sprayTiers };
+            } else {
+                const noz_tier = Math.max(1, Math.round(w_total_effective / pitch));
+                numNozzles = noz_tier * sprayTiers;
+                sprayBreakdown = { front: numNozzles, total: numNozzles, tiers: sprayTiers };
             }
+            totalWater_LPM = numNozzles * sprayFlowRate_LPM;
         }
 
         // Chart Data Preparation
-        const distanceMax = Math.max(dActual_m, 30) * 1.3; 
-        const chartData = Array.from({ length: Math.ceil(distanceMax) + 1 }, (_, x) => { 
+        const distanceMax = Math.max(dActual_m, 30) * 1.3;
+        const chartData = Array.from({ length: Math.ceil(distanceMax) + 1 }, (_, x) => {
             const V = V_initial_ms / (1 + a_coeff * x + b_coeff * Math.pow(x, 2));
             return { x, v: V };
-        }); 
-        
+        });
+
         let xTarget = null;
         for (let i = 1; i < chartData.length; i++) {
             if (chartData[i].v <= vFilter_ms && chartData[i-1].v > vFilter_ms) {
-                const v1 = chartData[i-1].v; 
+                const v1 = chartData[i-1].v;
                 const v2 = chartData[i].v;
                 const x1 = chartData[i-1].x;
                 const x2 = chartData[i].x;
-                xTarget = x1 + ( (vFilter_ms - v1) * (x2 - x1) / (v2 - v1) ); 
+                xTarget = x1 + ( (vFilter_ms - v1) * (x2 - x1) / (v2 - v1) );
                 break;
-            } 
+            }
         }
 
         // Cache results
@@ -1816,22 +2141,22 @@ function calculateDesign() {
             Q_total_m3h, A_filter_m2_req, P_filter_pa, removalRate_pct,
             dActual_m, numPieces, vFilter_ms, v_face_actual_ms,
             mediaArea_m2, totalProvidedArea_m2, A_actual_m2,
-            A_nozzle_m2, numNozzles, totalWater_LPM, 
+            A_nozzle_m2, numNozzles, totalWater_LPM,
             vActualJet_ms, effective_velocity_for_pressure,
             isTriple, distributionData, mediaBreakdown, sprayBreakdown
         };
         lastCalculationInputs = {
-            qFan_m3h, nFans, vFilter_ms, dFan_m, wActual_m, hActual_m, dActual_m, 
+            qFan_m3h, nFans, vFilter_ms, dFan_m, wActual_m, hActual_m, dActual_m,
             wLeft_m, wFront_m, wRight_m, isTriple,
-            mediaWidth_m, mediaHeight_m, sprayFlowRate_LPM, sprayDiameter_m, a_coeff, b_coeff 
+            mediaWidth_m, mediaHeight_m, sprayFlowRate_LPM, sprayDiameter_m, a_coeff, b_coeff
         };
 
         // Render UI Elements
-        updateResultsUI(lastCalculationResults, A_actual_m2); 
+        updateResultsUI(lastCalculationResults, A_actual_m2);
         if (!mediaInputsInvalid) updateMediaResultsUI(numPieces, totalProvidedArea_m2, mediaBreakdown);
-        if (!sprayInputsInvalid) updateSprayResultsUI(numNozzles, totalWater_LPM, A_nozzle_m2, sprayBreakdown); 
+        if (!sprayInputsInvalid) updateSprayResultsUI(numNozzles, totalWater_LPM, A_nozzle_m2, sprayBreakdown);
         updateSummaryUI({ Q_total_m3h, A_fan_total_m2, V_initial_ms });
-        updateExplanationUI(lastCalculationInputs, lastCalculationResults); 
+        updateExplanationUI(lastCalculationInputs, lastCalculationResults);
         updateChart(chartData, dActual_m, xTarget, V_initial_ms, vFilter_ms, a_coeff, b_coeff, v_face_actual_ms, distributionData);
 
         // Goal Engineering Extensions:
@@ -1839,7 +2164,8 @@ function calculateDesign() {
         renderDistanceEvaluation(lastCalculationInputs, lastCalculationResults, xTarget);
         renderScrubberKpiDashboard(lastCalculationInputs, lastCalculationResults);
         renderFanStagingTable(lastCalculationInputs, lastCalculationResults);
-        renderBomSection(lastCalculationInputs, lastCalculationResults); 
+        renderBomSection(lastCalculationInputs, lastCalculationResults);
+        saveStateToLocalStorage();
     }
 
     function updateResultsUI(results, A_actual_m2) {
@@ -2035,10 +2361,38 @@ function calculateDesign() {
         content += createResultRow('requiredNozzles', fmt(numNozzles, 0), T.unit_pieces, fmt(numNozzles, 0), T.unit_pieces, true);
         content += createResultRow('totalWaterUsage', fmt(totalWater_LPM, 1), 'LPM', fmt(totalWater_LPM * CONV_LPM_TO_GPM, 1), 'GPM');
 
-        if (sprayBreakdown) {
+        const tiersCount = sprayBreakdown && sprayBreakdown.tiers ? sprayBreakdown.tiers : 2;
+        const tiersText = `${tiersCount} แถวแนวดิ่ง (ระยะห่าง ~0.85 ม.)`;
+        const waterM3H = fmt(totalWater_LPM * 0.06, 1);
+        let pumpText = 'CA65-50-5.5kW, 380V 3-Phase';
+        if (totalWater_LPM * 0.06 <= 18) pumpText = 'CA50-32-3.0kW, 380V 3-Phase';
+        else if (totalWater_LPM * 0.06 > 36) pumpText = 'CA80-65-7.5kW, 380V 3-Phase';
+
+        content += `
+            <div class="p-3 bg-indigo-50/70 border border-indigo-200 rounded-lg text-xs space-y-1.5 mt-2 shadow-xs">
+                <div class="flex items-center justify-between text-indigo-950 font-semibold border-b border-indigo-200/60 pb-1">
+                    <span>มาตรฐานท่อสเปรย์ WUSEN:</span>
+                    <span class="text-indigo-700 font-bold">${tiersText}</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-700">
+                    <span>แคลมป์สแตนเลส 304:</span>
+                    <span class="font-bold text-slate-900">${fmt(numNozzles, 0)} ชิ้น</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-700">
+                    <span>อัตราไหลน้ำรวม:</span>
+                    <span class="font-bold text-blue-700">${fmt(totalWater_LPM, 0)} LPM (${waterM3H} m³/h)</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-700">
+                    <span>ปั๊มน้ำหมุนเวียนแนะนำ:</span>
+                    <span class="font-bold text-emerald-800">${pumpText}</span>
+                </div>
+            </div>
+        `;
+
+        if (sprayBreakdown && sprayBreakdown.left !== undefined) {
             content += `
-                <div class="p-3 bg-indigo-50/60 border border-indigo-100 rounded-lg text-xs">
-                    <p class="font-semibold text-indigo-900 mb-1">การจัดสรรหัวสเปรย์แยก 3 ด้าน (คิดระยะซ้อนทับ 20%):</p>
+                <div class="p-3 bg-indigo-50/60 border border-indigo-100 rounded-lg text-xs mt-2">
+                    <p class="font-semibold text-indigo-900 mb-1">การจัดสรรหัวสเปรย์แยก 3 ด้าน (Zonal Breakdown):</p>
                     <div class="grid grid-cols-3 gap-2 text-center text-slate-700">
                         <div class="p-1.5 bg-white rounded border border-indigo-100">ปีกซ้าย: <strong>${sprayBreakdown.left}</strong> ${T.unit_pieces}</div>
                         <div class="p-1.5 bg-white rounded border border-indigo-200 font-semibold text-indigo-900">ด้านหน้า: <strong>${sprayBreakdown.front}</strong> ${T.unit_pieces}</div>
@@ -2403,13 +2757,13 @@ function calculateDesign() {
     }
 
     function openModal() {
-        getEl('geminiModal').classList.remove('hidden');
-        getEl('geminiModal').classList.add('flex'); 
+        getEl('expertModal').classList.remove('hidden');
+        getEl('expertModal').classList.add('flex'); 
     }
 
     function closeModal() {
-        getEl('geminiModal').classList.add('hidden');
-        getEl('geminiModal').classList.remove('flex'); 
+        getEl('expertModal').classList.add('hidden');
+        getEl('expertModal').classList.remove('flex'); 
     }
 
     function generatePrintRow(label, value, unit) {
@@ -2519,12 +2873,83 @@ function calculateDesign() {
         const stagingElement = getEl('stagingTableContainer');
         const stagingHtml = stagingElement ? stagingElement.innerHTML : '';
 
-        // BOM Table HTML
-        const bomElement = getEl('bomContainer');
-        const bomHtml = bomElement ? bomElement.innerHTML : '';
+        // BOQ Table HTML for print
+        let boqPrintHtml = '';
+        if (res.boqData) {
+            const b = res.boqData;
+            const rate = b.exchangeRate;
+            let boqRows = '';
+            b.items.forEach(it => {
+                const name = lang === 'th' ? it.name_th : it.name_en;
+                const unit = lang === 'th' ? it.unit_th : it.unit;
+                const thb = it.total_usd * rate;
+                boqRows += `
+                    <tr>
+                        <td style="padding: 5px; text-align: center; border: 1px solid #cbd5e1;">${it.no}</td>
+                        <td style="padding: 5px; border: 1px solid #cbd5e1; font-weight: 600;">${name}</td>
+                        <td style="padding: 5px; border: 1px solid #cbd5e1; font-size: 10px;">${it.spec}</td>
+                        <td style="padding: 5px; text-align: center; border: 1px solid #cbd5e1;">${unit}</td>
+                        <td style="padding: 5px; text-align: right; border: 1px solid #cbd5e1; font-weight: bold;">${it.qty}</td>
+                        <td style="padding: 5px; text-align: right; border: 1px solid #cbd5e1;">$${it.price_usd.toFixed(2)}</td>
+                        <td style="padding: 5px; text-align: right; border: 1px solid #cbd5e1; font-weight: bold;">$${it.total_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 5px; text-align: right; border: 1px solid #cbd5e1; font-weight: bold; color: #047857;">฿${thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            });
+            if (b.include_freight) {
+                boqRows += `
+                    <tr style="background-color: #eff6ff;">
+                        <td style="padding: 5px; text-align: center; border: 1px solid #cbd5e1;">14</td>
+                        <td style="padding: 5px; border: 1px solid #cbd5e1; font-weight: 600;">ค่าขนส่งทางเรือ (1x20GP Freight CFR Bangkok Port)</td>
+                        <td style="padding: 5px; border: 1px solid #cbd5e1; font-size: 10px;">ตู้คอนเทนเนอร์ 20GP ถึงท่าเรือกรุงเทพ (คลองเตย)</td>
+                        <td style="padding: 5px; text-align: center; border: 1px solid #cbd5e1;">ตู้</td>
+                        <td style="padding: 5px; text-align: right; border: 1px solid #cbd5e1; font-weight: bold;">1</td>
+                        <td style="padding: 5px; text-align: right; border: 1px solid #cbd5e1;">$${b.freight_usd.toFixed(2)}</td>
+                        <td style="padding: 5px; text-align: right; border: 1px solid #cbd5e1; font-weight: bold;">$${b.freight_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td style="padding: 5px; text-align: right; border: 1px solid #cbd5e1; font-weight: bold; color: #1d4ed8;">฿${b.freight_thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    </tr>
+                `;
+            }
+            boqPrintHtml = `
+                <div style="margin-bottom: 25px; page-break-inside: avoid;">
+                    <h3 style="font-size: 15px; font-weight: bold; margin-bottom: 6px; color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+                        6. ตารางประมาณราคาและถอดแบบวัสดุอุปกรณ์ (BOQ - อ้างอิงใบเสนอราคา WUSEN No. 10.30--2610-042)
+                    </h3>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9;">
+                                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: center;">No.</th>
+                                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">รายการอุปกรณ์</th>
+                                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: left;">คุณลักษณะเฉพาะ (Specification)</th>
+                                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: center;">หน่วย</th>
+                                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">จำนวน</th>
+                                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">ราคา/หน่วย($)</th>
+                                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">รวมเงิน (USD)</th>
+                                <th style="padding: 6px; border: 1px solid #cbd5e1; text-align: right;">รวมเงิน (THB)</th>
+                            </tr>
+                        </thead>
+                        <tbody>${boqRows}</tbody>
+                        <tfoot>
+                            <tr style="background-color: #f8fafc; font-weight: bold;">
+                                <td colspan="6" style="padding: 6px; text-align: right; border: 1px solid #cbd5e1;">รวมราคาสินค้าหน้าโรงงาน (Subtotal FOB):</td>
+                                <td style="padding: 6px; text-align: right; border: 1px solid #cbd5e1;">$${b.subtotal_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td style="padding: 6px; text-align: right; border: 1px solid #cbd5e1; color: #1e40af;">฿${b.subtotal_thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                            <tr style="background-color: #ecfdf5; font-weight: bold; font-size: 12px;">
+                                <td colspan="6" style="padding: 7px; text-align: right; border: 1px solid #cbd5e1; color: #065f46;">ยอดรวมส่งถึงท่าเรือกรุงเทพ (Grand Total CFR Bangkok Port):</td>
+                                <td style="padding: 7px; text-align: right; border: 1px solid #cbd5e1; color: #065f46;">$${b.total_cfr_usd.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                <td style="padding: 7px; text-align: right; border: 1px solid #cbd5e1; color: #065f46;">฿${b.total_cfr_thb.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            `;
+        }
 
-        const kspLogo = 'data:image/png;base64,' + fs.readFileSync('K.S.P. EQUIPMENT CO.,LTD. Logo R.1.png').toString('base64');
-        const wusenLogo = 'data:image/png;base64,' + fs.readFileSync('Logo Wusen.png').toString('base64');
+        const kspLogoEl = document.querySelector('img[alt="KSP Logo"]');
+        const wusenLogoEl = document.querySelector('img[alt="Wusen Logo"]');
+        const kspLogo = kspLogoEl ? kspLogoEl.src : '';
+        const wusenLogo = wusenLogoEl ? wusenLogoEl.src : '';
 
         let chartHtmlSection = '';
         if (chartImage) {
@@ -2638,7 +3063,7 @@ function calculateDesign() {
                         <h3 style="font-size: 15px; font-weight: bold; margin-bottom: 6px; color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
                             6. รายการวัสดุและสเปกอุปกรณ์สำหรับจัดซื้อ (Bill of Materials & Sizing Specifications)
                         </h3>
-                        ${bomHtml}
+                        ${boqPrintHtml}
                     </div>
 
                     <!-- Section 7: Velocity Curve -->
@@ -2683,7 +3108,7 @@ function calculateDesign() {
     }
 
     function printAdvice() {
-        const adviceContent = getEl('llmOutput').innerHTML; 
+        const adviceContent = getEl('expertOutput').innerHTML; 
         const T = translations[currentLanguage];
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
@@ -2888,7 +3313,7 @@ function calculateDesign() {
     // OFFLINE ADVISOR: Generates instant expert engineering analysis and reports
     async function generateExpertReport(promptType) {
         openModal();
-        const llmOutput = getEl('llmOutput');
+        const llmOutput = getEl('expertOutput');
         llmOutput.innerHTML = '<div class="flex justify-center items-center py-6"><div class="spinner"></div></div>';
 
         const results = lastCalculationResults; 
@@ -2905,37 +3330,180 @@ function calculateDesign() {
         }, 150);
     }
 
+
+    // -------------------------------------------------------------
+    // DESIGN STATE PERSISTENCE (LocalStorage & File JSON)
+    // -------------------------------------------------------------
+    function saveStateToLocalStorage() {
+        try {
+            const state = {
+                nFans: getEl('nFans') ? getEl('nFans').value : '',
+                qFanMetric: getEl('qFanMetric') ? getEl('qFanMetric').value : '',
+                qFanImperial: getEl('qFanImperial') ? getEl('qFanImperial').value : '',
+                dFan: getEl('dFan') ? getEl('dFan').value : '',
+                vFilter: getEl('vFilter') ? getEl('vFilter').value : '',
+                dActual: getEl('dActual') ? getEl('dActual').value : '',
+                hActual: getEl('hActual') ? getEl('hActual').value : '',
+                wActual: getEl('wActual') ? getEl('wActual').value : '',
+                wLeft: getEl('wLeft') ? getEl('wLeft').value : '',
+                wFront: getEl('wFront') ? getEl('wFront').value : '',
+                wRight: getEl('wRight') ? getEl('wRight').value : '',
+                coeffA: getEl('coeffA') ? getEl('coeffA').value : '',
+                coeffB: getEl('coeffB') ? getEl('coeffB').value : '',
+                mediaWidth: getEl('mediaWidth') ? getEl('mediaWidth').value : '',
+                mediaHeight: getEl('mediaHeight') ? getEl('mediaHeight').value : '',
+                sprayFlowRate: getEl('sprayFlowRate') ? getEl('sprayFlowRate').value : '',
+                sprayDiameter: getEl('sprayDiameter') ? getEl('sprayDiameter').value : '',
+                layout: currentLayoutMode,
+                unit: currentUnit,
+                lang: currentLanguage
+            };
+            localStorage.setItem('ksp_wusen_odor_design', JSON.stringify(state));
+        } catch (e) {}
+    }
+
+    function loadStateFromLocalStorage() {
+        try {
+            const raw = localStorage.getItem('ksp_wusen_odor_design');
+            if (!raw) return false;
+            const state = JSON.parse(raw);
+            if (!state || typeof state !== 'object' || !state.nFans) return false;
+
+            const fields = ['nFans', 'qFanMetric', 'qFanImperial', 'dFan', 'vFilter', 'dActual', 'hActual', 
+                            'wActual', 'wLeft', 'wFront', 'wRight', 'coeffA', 'coeffB', 'mediaWidth', 
+                            'mediaHeight', 'sprayFlowRate', 'sprayDiameter'];
+            fields.forEach(id => {
+                if (state[id] !== undefined && state[id] !== null && state[id] !== "" && getEl(id)) {
+                    getEl(id).value = state[id];
+                }
+            });
+
+            if (state.layout) setLayoutMode(state.layout); else setLayoutMode('single');
+            if (state.unit) setUnit(state.unit); else setUnit('metric');
+            if (state.lang) setLanguage(state.lang); else setLanguage('th');
+            updateAirflow('metric', getEl('qFanMetric'));
+            calculateDesign();
+            return true;
+        } catch (e) {
+            console.error('Failed to load state from localStorage:', e);
+            return false;
+        }
+    }
+
+    function exportDesignJSON() {
+        const state = {
+            appName: "KSP WUSEN Odor Control System Design",
+            version: "4.3",
+            exportDate: new Date().toISOString(),
+            parameters: {
+                nFans: getEl('nFans').value,
+                qFanMetric: getEl('qFanMetric').value,
+                qFanImperial: getEl('qFanImperial').value,
+                dFan: getEl('dFan').value,
+                vFilter: getEl('vFilter').value,
+                dActual: getEl('dActual').value,
+                hActual: getEl('hActual').value,
+                wActual: getEl('wActual').value,
+                wLeft: getEl('wLeft').value,
+                wFront: getEl('wFront').value,
+                wRight: getEl('wRight').value,
+                coeffA: getEl('coeffA').value,
+                coeffB: getEl('coeffB').value,
+                mediaWidth: getEl('mediaWidth').value,
+                mediaHeight: getEl('mediaHeight').value,
+                sprayFlowRate: getEl('sprayFlowRate').value,
+                sprayDiameter: getEl('sprayDiameter').value,
+                layout: currentLayoutMode,
+                unit: currentUnit
+            }
+        };
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ksp_wusen_odor_${currentLayoutMode}_${getEl('nFans').value}fans_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function importDesignJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                const params = data.parameters || data;
+                const fields = ['nFans', 'qFanMetric', 'qFanImperial', 'dFan', 'vFilter', 'dActual', 'hActual', 
+                                'wActual', 'wLeft', 'wFront', 'wRight', 'coeffA', 'coeffB', 'mediaWidth', 
+                                'mediaHeight', 'sprayFlowRate', 'sprayDiameter'];
+                fields.forEach(id => {
+                    if (params[id] !== undefined && getEl(id)) getEl(id).value = params[id];
+                });
+                if (params.layout) setLayoutMode(params.layout);
+                if (params.unit) setUnit(params.unit);
+                updateAirflow('metric', getEl('qFanMetric'));
+                calculateDesign();
+                saveStateToLocalStorage();
+                alert(currentLanguage === 'th' ? '✅ นำเข้าข้อมูลโปรเจกต์สำเร็จเรียบร้อย!' : '✅ Project design imported successfully!');
+            } catch (err) {
+                alert(currentLanguage === 'th' ? '❌ ไฟล์ไม่ถูกต้อง ไม่สามารถโหลดข้อมูลได้' : '❌ Invalid file format.');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    function resetToDefaults() {
+        const confirmMsg = currentLanguage === 'th' 
+            ? 'ต้องการรีเซ็ตพารามิเตอร์กลับสู่ค่าเริ่มต้นมาตรฐานใช่หรือไม่?' 
+            : 'Reset all parameters to default farm settings?';
+        if (confirm(confirmMsg)) {
+            try { localStorage.removeItem('ksp_wusen_odor_design'); } catch(e){}
+            applyPreset('swine8');
+        }
+    }
+
     window.onload = function() {
-        getEl('nFans').value = "9";
-        getEl('vFilter').value = "1.0"; 
-        getEl('dFan').value = "1.27";
-        getEl('wActual').value = "15";
-        getEl('hActual').value = "3";
-        getEl('dActual').value = "20"; 
-
-        // 3-Sided U-Shape defaults (5m left wing + 15m front + 5m right wing = 25m total)
-        getEl('wLeft').value = "5";
-        getEl('wFront').value = "15";
-        getEl('wRight').value = "5";
-
-        getEl('mediaWidth').value = "0.6";
-        getEl('mediaHeight').value = "0.9"; 
-        getEl('coeffA').value = "0.05";
-        getEl('coeffB').value = "0.002";
-        getEl('sprayFlowRate').value = "10";
-        getEl('sprayDiameter').value = "0.7";
-
-        const initialMetricAirflow = "40000";
-        getEl('qFanMetric').value = initialMetricAirflow;
-
-        setLanguage(currentLanguage);
-        setUnit('metric');
-        setLayoutMode('single');
-
-        updateAirflow('metric', getEl('qFanMetric'));
-
         getEl('printButton').addEventListener('click', generatePrintPage);
         getEl('printAdviceButton').addEventListener('click', printAdvice);
+
+        // Ensure default fallback values if fields are empty
+        const defaults = {
+            nFans: "9",
+            qFanMetric: "40000",
+            dFan: "1.27",
+            vFilter: "1.0",
+            dActual: "20",
+            hActual: "3",
+            wActual: "15",
+            wLeft: "5",
+            wFront: "15",
+            wRight: "5",
+            coeffA: "0.05",
+            coeffB: "0.002",
+            mediaWidth: "0.6",
+            mediaHeight: "0.9",
+            sprayFlowRate: "10",
+            sprayDiameter: "0.7"
+        };
+        Object.keys(defaults).forEach(id => {
+            const el = getEl(id);
+            if (el && (!el.value || el.value.trim() === '')) {
+                el.value = defaults[id];
+            }
+        });
+
+        // Check if there is saved session state in LocalStorage
+        const hasSaved = loadStateFromLocalStorage();
+        if (!hasSaved) {
+            // No saved state found: initialize default settings
+            setLanguage(currentLanguage);
+            setUnit('metric');
+            setLayoutMode('single');
+            updateAirflow('metric', getEl('qFanMetric'));
+            calculateDesign();
+        }
     };
     </script>
 </body>
